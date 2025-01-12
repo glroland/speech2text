@@ -172,3 +172,4 @@ cython_debug/
 
 samples/music
 .DS_Store
+target
