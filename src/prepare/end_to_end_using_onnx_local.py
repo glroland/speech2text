@@ -1,14 +1,12 @@
 import sys
 import logging
 import torch
-#from transformers import AutoProcessor, pipeline
-#from optimum.onnxruntime import ORTModelForSpeechSeq2Seq
 import numpy as np
 import onnxruntime
 from onnxruntime_extensions import get_library_path
 
 # Constants
-ONNX_MODEL_PATH = "../../target/onnx/model.onnx"
+ONNX_MODEL_PATH = "../../target/whisper_onnx_tiny_en_fp32_e2e.onnx"
 
 # Setup logging
 logger = logging.getLogger(__name__)
