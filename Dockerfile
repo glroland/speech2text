@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./src/app.py .
 
 # Copy AI Models into container
-COPY ./target/whisper_onnx_tiny_en_fp32_e2e.onnx .
+COPY ./whisper_onnx_tiny_en_fp32_e2e.onnx .
 
 # Environment variable for number of workers
 ENV NUM_WORKERS "10"
