@@ -3,3 +3,8 @@ accelerate
 datasets[audio]
 torch
 optimum[exporters]
+health
+utils
+flask
+fastapi[standard]
+onnxruntime_extensions
