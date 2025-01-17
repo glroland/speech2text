@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, File, UploadFile
 from typing import Annotated
-#from health import health_api_handler
+from health import health_api_handler
 from onnxruntime_extensions import get_library_path
 
 logger = logging.getLogger(__name__)
@@ -42,8 +42,7 @@ async def root():
 @app.get("/health", response_model=str)
 def health():
     """ Provide a basic response indicating the app is available for consumption. """
-    return "OK"
-#    return health_api_handler()
+    return health_api_handler()
 
 @app.post("/transcribe/")
 async def transcribe(file : UploadFile):

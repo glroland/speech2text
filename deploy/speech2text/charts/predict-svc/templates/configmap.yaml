@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "speech2text.fullname" . }}
+  labels:
+    {{- include "speech2text.labels" . | nindent 4 }}
+immutable: false
+data:
+  NUM_WORKERS: "5"
+  config.ini: |-
+      [DEFAULT]
+      # local, api, registry
+      model_source = api
