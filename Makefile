@@ -8,7 +8,7 @@ onnx:
 	cp target/export_onnx_output/encoder_model.onnx target/onnx/encoder_model.onnx
 
 build:
-	podman build -t registry.home.glroland.com/speech2text/speech2text:latest .
+	podman build -t registry.home.glroland.com/glroland/speech2text:latest .
 
 run.end2end:
 	cd src/prepare && python end_to_end_using_xformers_pipe.py ../../samples/music/night_before_christmas_moore_ac_64kb.mp3
