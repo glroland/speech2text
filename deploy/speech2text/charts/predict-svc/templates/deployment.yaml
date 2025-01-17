@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "speech2text.fullname" . }}
+  labels:
+    app.kubernetes.io/part-of: "{{ .Release.Name }}-speech2text"
+    {{- include "speech2text.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "speech2text.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: "{{ include "speech2text.fullname" . }}"
+        deployment: {{ include "speech2text.fullname" . }}
+        app.kubernetes.io/part-of: "{{ .Release.Name }}-speech2text"
+        {{- include "speech2text.labels" . | nindent 8 }}
+        {{- include "speech2text.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.global.image.usePullSecret }}
+      imagePullSecrets:
+      - name: speech2text-pull-secret
+      {{- end }}
+      {{ if eq .Values.global.useServiceAccount true }}
+      serviceAccountName: {{ include "speech2text.fullname" . }}
+      {{ end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.global.image.repository }}{{ .Values.image.name }}:{{ .Values.global.image.tag }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          ports:
+          - containerPort: {{ .Values.image.port }}
+          env:
+            - name: NUM_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "speech2text.fullname" . }}
+                  key: NUM_WORKERS
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.image.port }}
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.image.port }}
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.image.port }}
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

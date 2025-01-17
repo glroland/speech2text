@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "speech2text.fullname" . }}
+  labels:
+    app.kubernetes.io/part-of: "{{ .Release.Name }}-speech2text"
+    {{- include "speech2text.labels" . | nindent 4 }}
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.image.port }}
+  internalTrafficPolicy: Cluster
+  type: {{ .Values.service.type }}
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: "{{ include "speech2text.fullname" . }}"
+    deployment: "{{ include "speech2text.fullname" . }}"

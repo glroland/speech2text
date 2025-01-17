@@ -1,0 +1,81 @@
+pipeline 
+{
+   agent any
+   
+   options 
+   {
+      disableConcurrentBuilds()
+      buildDiscarder(logRotator(numToKeepStr: '3'))
+      timestamps()
+   }
+
+   stages
+   {
+      stage('Prepare') 
+      {
+         steps 
+         {
+            sh '''
+                    echo "PATH = ${PATH}"
+                '''
+
+            git branch: 'main', 
+                    url: 'https://github.com/glroland/speech2text.git'
+         }
+      }
+   
+      stage('Ensure output directories are clean') 
+      {
+         steps 
+         {
+            sh '''
+                  rm -rf target
+                '''
+         }
+      }
+
+      stage('Create Docker Image for speech2text') 
+      {
+         steps 
+         {
+            sh 'docker build -f Dockerfile --tag speech2text:$BUILD_NUMBER .'
+            sh 'docker save speech2text:$BUILD_NUMBER > speech2text-dockerimage.tar'
+            step(followSymlinks: false, artifacts: 'speech2text-dockerimage.tar', $class: 'ArtifactArchiver')
+            sh 'docker rmi speech2text:$BUILD_NUMBER'
+         }
+      }
+
+      stage('Scan for OWASP Issues in Dependencies') 
+      {
+         steps 
+         {
+            dependencyCheck additionalArguments: ''' 
+                       -o "./" 
+                       -s "./"
+                       -f "ALL" 
+                       --prettyPrint''', odcInstallation: 'OWASP Dependency-Check'
+   
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            step(followSymlinks: false, artifacts: '**/dependency-check-report.*', $class: 'ArtifactArchiver')
+         }
+      }
+
+      stage('Reload then push images to quay') 
+      {
+         steps 
+         {
+            script 
+            {
+               docker.withRegistry('https://registry.home.glroland.com/', 'quay') 
+               {
+                  sh 'docker load -i speech2text-dockerimage.tar'
+                  sh 'docker tag speech2text:$BUILD_NUMBER registry.home.glroland.com/glroland/speech2text:$BUILD_NUMBER'
+                  sh 'docker rmi speech2text:$BUILD_NUMBER'
+                  sh 'docker push registry.home.glroland.com/glroland/speech2text:$BUILD_NUMBER'
+                  sh 'docker rmi registry.home.glroland.com/glroland/speech2text:$BUILD_NUMBER'
+               }
+            }
+         }
+      }
+   }
+}
