@@ -10,7 +10,7 @@ global:
 
   image:
     repository: registry.home.glroland.com/glroland/
-    tag: 20250116-1
+    tag: 20250116-2
     pullPolicy: IfNotPresent
     usePullSecret: true
 
