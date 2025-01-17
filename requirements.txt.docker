@@ -7,5 +7,3 @@ flask
 fastapi[standard]
 onnxruntime
 onnxruntime_extensions
-health
-utils
